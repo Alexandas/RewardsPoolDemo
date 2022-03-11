@@ -14,10 +14,6 @@
 					{{ reward }}
 				</div>
 				<div class="Row">
-					<span> RewardPerBlock:</span>
-					{{ rewardPerBlock }}
-				</div>
-				<div class="Row">
 					<span> AccumulatedReward:</span>
 					{{ accumulatedReward }}
 				</div>
@@ -77,7 +73,6 @@ export default class Pool extends Vue {
 	claimLoading = false
 
 	holder = ''
-	rewardPerBlock = 0
 	node = ''
 	reward = 0
 	totalClaimed = 0
@@ -107,7 +102,6 @@ export default class Pool extends Vue {
 	async sync() {
 		await this.getPool()
 		this.getReward()
-		this.getClaimed()
 		this.getAccumulatedReward()
 		this.getStatus()
 	}
@@ -122,10 +116,8 @@ export default class Pool extends Vue {
 
 	async getPool() {
 		const pool = await contracts.RewardPool.pools(this.pid)
-
+		this.totalClaimed = formatToken(pool.claimed)
 		this.holder = pool.holder
-		this.rewardPerBlock = formatToken(pool.rewardPerBlock)
-
 		this.node = await contracts.RewardPool.node(this.holder)
 		this.opened = pool.open.toNumber()
 		const o = await contracts.provider.getBlock(this.opened)
@@ -141,11 +133,6 @@ export default class Pool extends Vue {
 	async getReward() {
 		const r = await contracts.RewardPool.reward(this.pid)
 		this.reward = formatToken(r)
-	}
-
-	async getClaimed() {
-		const h = await contracts.RewardPool.holders(this.holder)
-		this.totalClaimed = formatToken(h.claimed)
 	}
 
 	async getAccumulatedReward() {

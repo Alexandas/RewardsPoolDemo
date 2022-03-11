@@ -30,12 +30,23 @@
 				</div>
 				<span style="float: right">
 					<span style="margin-right: 1rem">Pool:{{ balance }}</span>
+					<span
+						style="margin-right: 1rem"
+					>RewardPerBlock:{{ rewardPerBlock }}</span>
 					<a-button
-						v-show="canAdd"
+						v-show="isAdmin"
 						type="primary"
-						@click="addPool"
+						@click="add"
 					>
 						Add
+					</a-button>
+					<a-button
+						v-show="isAdmin"
+						style="margin-left: 8px"
+						type="primary"
+						@click="edit"
+					>
+						Edit
 					</a-button>
 				</span>
 			</a-card>
@@ -46,25 +57,34 @@
 				:show="showAddPoolModal"
 				@close="closeAddPoolModal"
 			/>
+			<EditPool
+				:show="showEditPoolModal"
+				@close="closeEditPoolModal"
+			/>
 		</div>
 	</div>
 </template>
+
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
 import { UPDATE_ACCOUNT, UPDATE_CHAINID } from '@/store'
 import { formatNetwork, isNetworkSupported, formatToken } from '@/utils'
 import contracts from '@/contracts'
 import AddPoolModal from '@/components/AddPoolModal.vue'
+import EditPool from '@/components/EditPool.vue'
 
 @Component({
 	components: {
 		AddPoolModal,
+		EditPool,
 	},
 })
 export default class App extends Vue {
-	canAdd = false
+	isAdmin = false
 	showAddPoolModal = false
+	showEditPoolModal = false
 	balance = 0
+	rewardPerBlock = 0
 
 	async created() {
 		await this.checkState()
@@ -78,10 +98,11 @@ export default class App extends Vue {
 	async sync() {
 		const owner = await contracts.RewardPool.owner()
 		const from = await contracts.signer.getAddress()
-		this.canAdd = owner == from
+		this.isAdmin = owner == from
 		const b = await contracts.token().balanceOf(contracts.poolAddress)
-		console.log(this.canAdd, b.toString())
 		this.balance = formatToken(b)
+		const r = await contracts.RewardPool.rewardPerBlock()
+		this.rewardPerBlock = formatToken(r)
 	}
 
 	get isNetworkSupported() {
@@ -135,12 +156,22 @@ export default class App extends Vue {
 		window.location.reload()
 	}
 
-	async addPool() {
+	add() {
 		this.showAddPoolModal = true
 	}
+
+	edit() {
+		this.showEditPoolModal = true
+	}
+
 	closeAddPoolModal() {
 		this.showAddPoolModal = false
 	}
+
+	closeEditPoolModal() {
+		this.showEditPoolModal = false
+	}
+
 	listen() {
 		window.ethereum.on('accountsChanged', (accounts) => {
 			this.$store.commit(UPDATE_ACCOUNT, accounts[0])

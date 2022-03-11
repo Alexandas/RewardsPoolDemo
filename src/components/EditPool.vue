@@ -8,11 +8,8 @@
 			@cancel="close"
 		>
 			<a-form>
-				<a-form-item label="Holder">
-					<a-input v-model="holder" />
-				</a-form-item>
-				<a-form-item label="Node">
-					<a-input v-model="node" />
+				<a-form-item label="RewardPerBlock">
+					<a-input v-model="rewardPerBlock" />
 				</a-form-item>
 				<a-form-item>
 					<a-button
@@ -31,14 +28,14 @@
 
 <script lang="ts">
 import contracts from '@/contracts'
+import { toToken } from '@/utils'
 import { Component, Vue, Prop, Emit, Watch } from 'vue-property-decorator'
 
 @Component
-export default class AddPoolModal extends Vue {
+export default class EditPool extends Vue {
 	loading = false
 	visible = false
-	holder = ''
-	node = ''
+	rewardPerBlock = '0'
 
 	@Prop()
 	show = false
@@ -51,10 +48,10 @@ export default class AddPoolModal extends Vue {
 	async confirm() {
 		try {
 			this.loading = true
-			const data = contracts.RewardPool.interface.encodeFunctionData('open', [
-				this.holder,
-				this.node,
-			])
+			const data = contracts.RewardPool.interface.encodeFunctionData(
+				'setRewardPerBlock',
+				[toToken(this.rewardPerBlock)]
+			)
 			const tx = await contracts.sendTransaction({
 				to: contracts.poolAddress,
 				data,

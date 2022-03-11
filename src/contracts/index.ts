@@ -7,7 +7,7 @@ class Contracts {
 	// DAI
 	public readonly tokenAddress = '0x2d2C8ab3A4006823260F862FF042b8cFDBcCE0C7'
 
-	public readonly poolAddress = '0xaCC9DC46fc0c112f3Bc6be6925477476F5447e5F'
+	public readonly poolAddress = '0x8017c0a5ad2aFD8C7baD1C933fbB9467B44af9b4'
 
 	public get provider(): providers.Web3Provider {
 		if (!window.ethereum) {
